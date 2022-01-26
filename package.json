@@ -1,14 +1,14 @@
 {
   "private": true,
-  "name": "astexplorer-go",
+  "name": "astexplorer-cue",
   "version": "1.0.0",
   "module": "index.js",
   "main": "index.js",
-  "author": "DanSnow <dododavid006@gmail.com>",
+  "author": "Brandon Bloom <brandon.d.bloom@gmail.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/DanSnow/astexplorer-go"
+    "url": "https://github.com/brandonbloom/astexplorer-cue"
   },
   "scripts": {
     "build": "node scripts/build.js"

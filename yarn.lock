@@ -5,9 +5,9 @@ __metadata:
   version: 4
   cacheKey: 8
 
-"astexplorer-go@workspace:.":
+"astexplorer-cue@workspace:.":
   version: 0.0.0-use.local
-  resolution: "astexplorer-go@workspace:."
+  resolution: "astexplorer-cue@workspace:."
   dependencies:
     shelljs: ^0.8.5
   languageName: unknown

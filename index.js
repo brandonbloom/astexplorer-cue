@@ -12,5 +12,5 @@ export async function init() {
 
 
 export function parseFile (code) {
-  return JSON.parse(window.__GO_PARSE_FILE__(code))
+  return JSON.parse(window.__CUE_PARSE_FILE__(code))
 }
