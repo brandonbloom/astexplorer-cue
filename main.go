@@ -1,9 +1,10 @@
 //go:build !js
+// +build !js
 
 package main
 
 import (
-	"fmt"
+	"encoding/json"
 	"io/ioutil"
 	"os"
 )
@@ -11,7 +12,9 @@ import (
 func main() {
 	code, err := ioutil.ReadFile(os.Args[1])
 	if err == nil {
-		res := parseFile(string(code))
-		fmt.Printf("%s\n", res)
+		m := parseFile(string(code))
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "  ")
+		enc.Encode(m)
 	}
 }

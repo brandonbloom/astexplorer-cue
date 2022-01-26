@@ -1,38 +1,26 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"go/ast"
-	"go/parser"
-	"go/token"
 	"os"
 	"reflect"
-	"strings"
+
+	"cuelang.org/go/cue/ast"
+	"cuelang.org/go/cue/parser"
+	"cuelang.org/go/cue/token"
 )
 
-func parseFile(code string) []byte {
-	fst := token.NewFileSet()
-	f, _ := parser.ParseFile(fst, "main.go", code, 0)
-	m := walk(fst, f)
-	res, _ := json.Marshal(m)
-	return res
+func parseFile(code string) map[string]interface{} {
+	f, _ := parser.ParseFile("", code)
+	return walk(f)
 }
 
-func walk(fst *token.FileSet, node interface{}) map[string]interface{} {
+func walk(node interface{}) map[string]interface{} {
 	if node == nil {
 		return nil
 	}
 
 	m := make(map[string]interface{})
-
-	if _, ok := node.(*ast.Scope); ok {
-		return nil
-	}
-
-	if _, ok := node.(*ast.Object); ok {
-		return nil
-	}
 
 	val := reflect.ValueOf(node)
 	if val.IsNil() {
@@ -46,24 +34,28 @@ func walk(fst *token.FileSet, node interface{}) map[string]interface{} {
 	for i := 0; i < ty.NumField(); i++ {
 		field := ty.Field(i)
 		val := val.Field(i)
-		if strings.HasSuffix(field.Name, "Pos") {
+		// field.IsExported not available in Go 1.13.
+		if field.PkgPath == "" {
+			continue
+		}
+		if field.Type.Name() == "Pos" {
 			continue
 		}
 		switch field.Type.Kind() {
 		case reflect.Array, reflect.Slice:
 			list := make([]interface{}, 0, val.Len())
 			for i := 0; i < val.Len(); i++ {
-				if item := walk(fst, val.Index(i).Interface()); item != nil {
+				if item := walk(val.Index(i).Interface()); item != nil {
 					list = append(list, item)
 				}
 			}
 			m[field.Name] = list
 		case reflect.Ptr:
-			if child := walk(fst, val.Interface()); child != nil {
+			if child := walk(val.Interface()); child != nil {
 				m[field.Name] = child
 			}
 		case reflect.Interface:
-			if child := walk(fst, val.Interface()); child != nil {
+			if child := walk(val.Interface()); child != nil {
 				m[field.Name] = child
 			}
 		case reflect.String:
@@ -81,8 +73,8 @@ func walk(fst *token.FileSet, node interface{}) map[string]interface{} {
 		}
 	}
 	if n, ok := node.(ast.Node); ok {
-		start := fst.Position(n.Pos())
-		end := fst.Position(n.End())
+		start := n.Pos().Offset()
+		end := n.End().Offset()
 		m["Loc"] = map[string]interface{}{"Start": start, "End": end}
 	}
 	return m
